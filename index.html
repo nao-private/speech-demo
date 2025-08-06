@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <title>音声認識テスト</title>
+  </head>
+  <body>
+    <h1>🎙️ 話してみてください</h1>
+    <button onclick="startRecognition()">録音開始</button>
+    <p id="result"></p>
+
+    <script>
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+
+      recognition.lang = "ja-JP"; // 日本語対応
+      recognition.interimResults = false; // 一時結果は使わない（trueでもOK）
+      recognition.maxAlternatives = 1;
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById("result").textContent = "認識結果: " + transcript;
+      };
+
+      recognition.onerror = (event) => {
+        document.getElementById("result").textContent = "エラー: " + event.error;
+      };
+
+      function startRecognition() {
+        recognition.start();
+        document.getElementById("result").textContent = "🎧 聞き取り中…";
+      }
+    </script>
+  </body>
+</html>
