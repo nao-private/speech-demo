@@ -1,35 +1,90 @@
 <!DOCTYPE html>
 <html lang="ja">
-  <head>
-    <meta charset="UTF-8">
-    <title>音声認識テスト</title>
-  </head>
-  <body>
-    <h1>🎙️ 話してみてください</h1>
-    <button onclick="startRecognition()">録音開始</button>
-    <p id="result"></p>
+<head>
+  <meta charset="UTF-8">
+  <title>宝くじ販売サポート</title>
+</head>
+<body>
+  <h1>🎫 宝くじ販売サポート</h1>
 
-    <script>
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
+  <label for="langSelect">
+    言語を選択／Please select language:
+  </label>
+  <select id="langSelect" disabled>
+    <option value="ja-JP">日本語</option>
+    <option value="en-US">English (US)</option>
+  </select>
+  <button id="startBtn" disabled>
+    🎙️ 発話開始
+  </button>
 
-      recognition.lang = "ja-JP"; // 日本語対応
-      recognition.interimResults = false; // 一時結果は使わない（trueでもOK）
-      recognition.maxAlternatives = 1;
+  <p id="result">認識結果がここに表示されます</p>
 
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        document.getElementById("result").textContent = "認識結果: " + transcript;
-      };
+  <script>
+    // 音声合成ユーティリティ
+    function speak(text, lang, onend) {
+      const utt = new SpeechSynthesisUtterance(text);
+      utt.lang = lang;
+      utt.onend = onend;
+      speechSynthesis.speak(utt);
+    }
 
-      recognition.onerror = (event) => {
-        document.getElementById("result").textContent = "エラー: " + event.error;
-      };
+    // ガイダンスを連続再生
+    function playGuidance() {
+      speak("いらっしゃいませ。", "ja-JP", () => {
+        speak("Can I help you?", "en-US", () => {
+          speak(
+            "言語を選択して発話を開始してください。",
+            "ja-JP",
+            () => {
+              speak(
+                "Please select language and start speaking..",
+                "en-US",
+                enableUI
+              );
+            }
+          );
+        });
+      });
+    }
 
-      function startRecognition() {
+    // ガイダンス完了後にUIを有効化
+    function enableUI() {
+      document.getElementById("langSelect").disabled = false;
+      document.getElementById("startBtn").disabled = false;
+    }
+
+    // ページ読み込みでガイダンス開始
+    window.addEventListener("load", playGuidance);
+
+    // Web Speech API 設定
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = event => {
+      const text = event.results[0][0].transcript;
+      document.getElementById("result").textContent =
+        "認識結果: " + text;
+    };
+
+    recognition.onerror = event => {
+      document.getElementById("result").textContent =
+        "エラー: " + event.error;
+    };
+
+    // 発話開始ボタン処理
+    document
+      .getElementById("startBtn")
+      .addEventListener("click", () => {
+        const lang = document.getElementById("langSelect").value;
+        recognition.lang = lang;
         recognition.start();
-        document.getElementById("result").textContent = "🎧 聞き取り中…";
-      }
-    </script>
-  </body>
+        document.getElementById("result").textContent =
+          "🎧 聞き取り中…（" + lang + "）";
+      });
+  </script>
+</body>
 </html>
